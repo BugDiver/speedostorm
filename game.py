@@ -1,10 +1,10 @@
 # coding=UTF-8
 import pygame
-import time
 import random
 
 pygame.init()
 carImg = pygame.image.load('racingcar.png')
+enmy_img = pygame.image.load('enemycar.png')
 pygame.display.set_icon(carImg)
 
 crash_sound = pygame.mixer.Sound('crashed.wav');
@@ -40,8 +40,9 @@ def car(x, y):
     gameDisplay.blit(carImg, (x, y))
 
 
-def enemy(enemy_x, enemy_y, enemy_w, enemy_h, color):
-    pygame.draw.rect(gameDisplay, color, [enemy_x, enemy_y, enemy_w, enemy_h])
+def enemy(enemy_x, enemy_y):
+    gameDisplay.blit(enmy_img, (enemy_x, enemy_y))
+    # pygame.draw.rect(gameDisplay, color, [enemy_x, enemy_y, enemy_w, enemy_h])
 
 
 def enemis_dodged(count):
@@ -54,62 +55,57 @@ def text_objects(text, font, color):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
 
+def onClick(action):
+    click = pygame.mouse.get_pressed()
+    if click[0] == 1 and action != None:
+        action()
+
 # button (message ,button_start_x ,button_start_y ,button_width,button_height ,normal_color ,hover_color)
 def button(msg, x, y, w, h, nc, hc, action=None):
     mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-    	
+    click = pygame.mouse.get_pressed()  	
     if x + w > mouse[0] > x and y + h > mouse[1] > y:
         pygame.draw.rect(gameDisplay, hc, [x, y, w, h])
-        if click[0] == 1 and action != None:
-        	action()
+        onClick(action)
     else:
         pygame.draw.rect(gameDisplay, nc, (x, y, w, h))
+    printText(msg ,white ,((x + (w / 2)), (y + (h / 2))) ,20)
 
-    smallText = pygame.font.Font("freesansbold.ttf", 20)
-    textSurf, textRect = text_objects(msg, smallText, white)
-    textRect.center = ((x + (w / 2)), (y + (h / 2)))
-    gameDisplay.blit(textSurf, textRect)
+
+def printText(text ,color,position,size):
+    largeText = pygame.font.Font('freesansbold.ttf', size)
+    TextSurf, TextRect = text_objects(text.decode("UTF-8"), largeText, color)
+    TextRect.center = position
+    gameDisplay.blit(TextSurf, TextRect)
+
+def showButtons(btn1,btn2):
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()
+        gameDisplay.fill(white)
+        printText("špëędôśtørm",black,((display_width / 2), (display_height / 2)),115)
+
+        button(btn1['msg'], 150, 650, 100, 50, green, bright_green, btn1['action'])
+        button(btn2['msg'], 550, 650, 100, 50, red, bright_red, btn2['action'])
+
+        pygame.display.update()
+        clock.tick(15)
 
 def crash():
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(crash_sound)
 
-    largeText = pygame.font.Font('freesansbold.ttf', 115)
-    TextSurf, TextRect = text_objects("You Crashed!!!", largeText, red)
-    TextRect.center = ((display_width / 2), (display_height / 2))
-    gameDisplay.blit(TextSurf, TextRect)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit_game()
-        button("play again", 150, 650, 100, 50, green, bright_green, game_loop)
-        button("Quit!", 550, 650, 100, 50, red, bright_red, quit_game)
+    printText('You Crashed!!' ,red,((display_width / 2), (display_height / 2)),115)
+    btn1 = {'msg' : 'play again' ,'action' : game_loop}
+    btn2 = {'msg' : 'Quit!' ,'action' : quit_game}
+    showButtons(btn1,btn2)
+    
 
-        pygame.display.update()
-        clock.tick(15)
-
-
-def game_intro():
-    intro = True
-    while intro:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit_game()
-
-        gameDisplay.fill(white)
-        largeText = pygame.font.Font('freesansbold.ttf', 115)
-        TextSurf, TextRect = text_objects(
-            "špëędôśtørm".decode("UTF-8"), largeText, black)
-        TextRect.center = ((display_width / 2), (display_height / 2))
-        gameDisplay.blit(TextSurf, TextRect)
-
-        button("Go!", 150, 650, 100, 50, green, bright_green, game_loop)
-        button("Quit!", 550, 650, 100, 50, red, bright_red, quit_game)
-
-        pygame.display.update()
-        clock.tick(15)
-
+def initialize_game():
+    btn1 = {'msg' : 'Go!' ,'action' : game_loop}
+    btn2 = {'msg' : 'Quit!' ,'action' : quit_game}
+    showButtons(btn1,btn2)
 
 def unpause():
     global pause
@@ -119,21 +115,10 @@ def unpause():
 def paused():
     global pause
     pygame.mixer.music.pause()
-    largeText = pygame.font.Font('freesansbold.ttf', 115)
-    TextSurf, TextRect = text_objects("Paused", largeText, black)
-    TextRect.center = ((display_width / 2), (display_height / 2))
-    gameDisplay.blit(TextSurf, TextRect)
-    while pause:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit_game()
-
-        button("Continue", 150, 650, 100, 50, green, bright_green, unpause)
-        button("Quit!", 550, 650, 100, 50, red, bright_red, quit_game)
-
-        pygame.display.update()
-        clock.tick(15)
-
+    printText('Paused' ,black,((display_width / 2), (display_height / 2)),115)
+    btn1 = {'msg' : 'Continue' ,'action' : unpause}
+    btn2 = {'msg' : 'Quit!' ,'action' : quit_game}
+    showButtons(btn1,btn2)
 
 def game_loop():
     global pause
@@ -143,34 +128,35 @@ def game_loop():
     x_change = 0
     enemy_speed = 5
     enemy_width = 100
-    enemy_height = 100
+    enemy_height = 250
     enemy_start_x = random.randrange(0, display_width)
     enemy_start_y = -600
 
     dodged = 0
-
-    gameExit = False
-
-    while not gameExit:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit_game()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    x_change = -10
+                    x_change = -5
                 if event.key == pygame.K_RIGHT:
-                    x_change = 10
+                    x_change = 5
+                if event.key == pygame.K_UP:
+                    enemy_speed+=5
                 if event.key == pygame.K_SPACE:
 					pause = True
 					paused()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     x_change = 0
+                if event.key == pygame.K_UP:
+                    enemy_speed -= 5
 
         x += x_change
         gameDisplay.fill(white)
 
-        enemy(enemy_start_x, enemy_start_y, enemy_width, enemy_height, blue)
+        enemy(enemy_start_x, enemy_start_y)
         enemy_start_y += enemy_speed
         enemis_dodged(dodged)
         car(x, y)
@@ -178,8 +164,8 @@ def game_loop():
         if x > display_width - car_width or x < 0:
             crash()
         if enemy_start_y > display_height:
-            enemy_start_y = 0
-            enemy_start_x = random.randrange(0, display_width - enemy_width)
+            enemy_start_y = -enemy_height
+            enemy_start_x = random.randrange(0, display_width - enemy_width + 10)
             dodged += 1
             if dodged % 5 == 0:
                 enemy_speed += 2
@@ -189,7 +175,7 @@ def game_loop():
                 crash()
 
         pygame.display.update()
-        clock.tick(60)
+        clock.tick(120)
 
 
-game_intro()
+initialize_game()
