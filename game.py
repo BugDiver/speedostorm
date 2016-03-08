@@ -1,9 +1,28 @@
 import pygame
 
 pygame.init()
-gameDisplay = pygame.display.set_mode((800,600))
+
+display_width = 900
+display_height = 600
+
+black = (0,0,0)
+white = (255,255,255)
+red = (255,0,0)
+
+
+
+gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption('SpeedoStorm')
 clock = pygame.time.Clock()
+
+carImg = pygame.image.load('racingcar.png')
+
+def car(x,y):
+	gameDisplay.blit(carImg ,(x,y))
+
+x = (display_width * 0.43)
+y  =(display_height * 0.8)
+
 
 crashed = False
 
@@ -11,8 +30,9 @@ while not crashed:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			crashed = True
-		print(event)
 
+	gameDisplay.fill(white)
+	car(x,y)
 	pygame.display.update()
 	clock.tick(60)
 
