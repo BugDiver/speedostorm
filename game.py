@@ -73,18 +73,19 @@ def button(msg, x, y, w, h, nc, hc, action=None):
 
 
 def printText(text ,color,position,size):
-    largeText = pygame.font.Font('freesansbold.ttf', size)
-    TextSurf, TextRect = text_objects(text.decode("UTF-8"), largeText, color)
+    font = pygame.font.Font('freesansbold.ttf', size)
+    TextSurf, TextRect = text_objects(text.decode("UTF-8"), font, color)
     TextRect.center = position
     gameDisplay.blit(TextSurf, TextRect)
 
-def showButtons(btn1,btn2):
+def render_page(header,hcolor,hpos,hsize,btn1,btn2,fill=None):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit_game()
-        gameDisplay.fill(white)
-        printText("špëędôśtørm",black,((display_width / 2), (display_height / 2)),115)
+        if fill != None:
+            gameDisplay.fill(white)
+        printText(header,hcolor,hpos,hsize)
 
         button(btn1['msg'], 150, 650, 100, 50, green, bright_green, btn1['action'])
         button(btn2['msg'], 550, 650, 100, 50, red, bright_red, btn2['action'])
@@ -95,17 +96,15 @@ def showButtons(btn1,btn2):
 def crash():
     pygame.mixer.music.stop()
     pygame.mixer.Sound.play(crash_sound)
-
-    printText('You Crashed!!' ,red,((display_width / 2), (display_height / 2)),115)
     btn1 = {'msg' : 'play again' ,'action' : game_loop}
     btn2 = {'msg' : 'Quit!' ,'action' : quit_game}
-    showButtons(btn1,btn2)
+    render_page("You Crashed!!",red,((display_width / 2),(display_height / 2)),115,btn1,btn2)
     
 
 def initialize_game():
     btn1 = {'msg' : 'Go!' ,'action' : game_loop}
     btn2 = {'msg' : 'Quit!' ,'action' : quit_game}
-    showButtons(btn1,btn2)
+    render_page("špëędôśtørm",black,((display_width / 2),(display_height / 2)),115,btn1,btn2,True)
 
 def unpause():
     global pause
@@ -115,10 +114,18 @@ def unpause():
 def paused():
     global pause
     pygame.mixer.music.pause()
-    printText('Paused' ,black,((display_width / 2), (display_height / 2)),115)
-    btn1 = {'msg' : 'Continue' ,'action' : unpause}
-    btn2 = {'msg' : 'Quit!' ,'action' : quit_game}
-    showButtons(btn1,btn2)
+    while pause:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()
+
+        printText("Paused",black,((display_width / 2), (display_height / 2)),115)
+
+        button("Continue", 150, 650, 100, 50, green, bright_green, unpause)
+        button("Quit", 550, 650, 100, 50, red, bright_red,quit_game)
+
+        pygame.display.update()
+        clock.tick(15)
 
 def game_loop():
     global pause
