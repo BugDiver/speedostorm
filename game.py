@@ -7,6 +7,9 @@ pygame.init()
 carImg = pygame.image.load('racingcar.png')
 pygame.display.set_icon(carImg)
 
+crash_sound = pygame.mixer.Sound('crashed.wav');
+pygame.mixer.music.load('playback.wav')
+
 display_width = 800
 display_height = 900
 car_width = 140
@@ -14,10 +17,12 @@ car_width = 140
 black = (0, 0, 0)
 white = (255, 255, 255)
 red = (200, 0, 0)
+blue = (0,0,200)
+
+
 green = (0, 116, 0)
 bright_red = (255, 0, 0)
 bright_green = (0, 200, 0)
-
 
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('SpeedoStorm')
@@ -55,7 +60,7 @@ def button(msg, x, y, w, h, nc, hc, action=None):
     click = pygame.mouse.get_pressed()
     	
     if x + w > mouse[0] > x and y + h > mouse[1] > y:
-        pygame.draw.rect(gameDisplay, hc, (x, y, w, h))
+        pygame.draw.rect(gameDisplay, hc, [x, y, w, h])
         if click[0] == 1 and action != None:
         	action()
     else:
@@ -66,20 +71,23 @@ def button(msg, x, y, w, h, nc, hc, action=None):
     textRect.center = ((x + (w / 2)), (y + (h / 2)))
     gameDisplay.blit(textSurf, textRect)
 
-
-def display_message(message, color):
-    largeText = pygame.font.Font('freesansbold.ttf', 115)
-    TextSurface, TextRect = text_objects(message, largeText, color)
-    TextRect.center = ((display_width / 2), (display_height / 2))
-    gameDisplay.blit(TextSurface, TextRect)
-    pygame.display.update()
-
-    time.sleep(2)
-    game_loop()
-
-
 def crash():
-    display_message('You Crashed!!!', red)
+    pygame.mixer.music.stop()
+    pygame.mixer.Sound.play(crash_sound)
+
+    largeText = pygame.font.Font('freesansbold.ttf', 115)
+    TextSurf, TextRect = text_objects("You Crashed!!!", largeText, red)
+    TextRect.center = ((display_width / 2), (display_height / 2))
+    gameDisplay.blit(TextSurf, TextRect)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()
+        button("play again", 150, 650, 100, 50, green, bright_green, game_loop)
+        button("Quit!", 550, 650, 100, 50, red, bright_red, quit_game)
+
+        pygame.display.update()
+        clock.tick(15)
 
 
 def game_intro():
@@ -106,9 +114,11 @@ def game_intro():
 def unpause():
     global pause
     pause = False
-
+    pygame.mixer.music.unpause()
 
 def paused():
+    global pause
+    pygame.mixer.music.pause()
     largeText = pygame.font.Font('freesansbold.ttf', 115)
     TextSurf, TextRect = text_objects("Paused", largeText, black)
     TextRect.center = ((display_width / 2), (display_height / 2))
@@ -117,6 +127,7 @@ def paused():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit_game()
+
         button("Continue", 150, 650, 100, 50, green, bright_green, unpause)
         button("Quit!", 550, 650, 100, 50, red, bright_red, quit_game)
 
@@ -126,8 +137,9 @@ def paused():
 
 def game_loop():
     global pause
+    pygame.mixer.music.play(-1)
     x = (display_width * 0.43)
-    y = (display_height * 0.8)
+    y = (display_height * 0.75)
     x_change = 0
     enemy_speed = 5
     enemy_width = 100
@@ -158,10 +170,10 @@ def game_loop():
         x += x_change
         gameDisplay.fill(white)
 
-        car(x, y)
-        enemy(enemy_start_x, enemy_start_y, enemy_width, enemy_height, black)
+        enemy(enemy_start_x, enemy_start_y, enemy_width, enemy_height, blue)
         enemy_start_y += enemy_speed
         enemis_dodged(dodged)
+        car(x, y)
 
         if x > display_width - car_width or x < 0:
             crash()
@@ -173,7 +185,7 @@ def game_loop():
                 enemy_speed += 2
 
         if y < enemy_start_y + enemy_height:
-            if x > enemy_start_x and x < enemy_start_x + enemy_width or x + car_width > enemy_start_x and x + car_width < enemy_start_x + enemy_width:
+            if x > enemy_start_x and x < enemy_start_x + enemy_width or x+car_width > enemy_start_x and x + car_width < enemy_start_x+enemy_width:
                 crash()
 
         pygame.display.update()
