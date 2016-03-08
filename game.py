@@ -24,8 +24,8 @@ def car(x,y):
 	gameDisplay.blit(carImg ,(x,y))
 
 def enemy(enemy_x,enemy_y,enemy_w,enemy_h,color):
-	pygame.draw.circle(gameDisplay ,color ,[enemy_x,enemy_y,enemy_w,enemy_h])
-	
+	pygame.draw.rect(gameDisplay ,color ,[enemy_x,enemy_y,enemy_w,enemy_h])
+		
 
 def text_objects(text ,font):
 	textSurface = font.render(text ,True ,red)
@@ -46,13 +46,13 @@ def crash():
 
 def game_loop():
 	x = (display_width * 0.43)
-	y  =(display_height * 0.8)
+	y = (display_height * 0.8)
 	x_change = 0
-	enemy_start_x = random.randrange(0,display_width)
-	enemy_start_y = -600
 	enemy_speed  = 10
 	enemy_width = 100
 	enemy_height = 100
+	enemy_start_x = random.randrange(0,display_width)
+	enemy_start_y = -600
 
 
 	gameExit = False
@@ -64,9 +64,9 @@ def game_loop():
 				quit()
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_LEFT:
-					x_change = -5
+					x_change = -10
 				if event.key == pygame.K_RIGHT:
-					x_change = 5
+					x_change = 10
 			if event.type == pygame.KEYUP:
 				if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 					x_change = 0
@@ -86,6 +86,11 @@ def game_loop():
 		if enemy_start_y > display_height:
 			enemy_start_y = -enemy_height
 			enemy_start_x = random.randrange(0,display_width)
+
+		if y < enemy_start_y + enemy_height:
+			if x > enemy_start_x and x < enemy_start_x+enemy_width or x+car_width > enemy_start_x	and x+car_width < enemy_start_x+enemy_width:
+				crash()
+
 		pygame.display.update()
 		clock.tick(60)
 
